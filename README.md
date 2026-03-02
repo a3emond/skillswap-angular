@@ -1,5 +1,8 @@
 # SkillSwap – Implementation Plan (Frontend Angular)
 
+
+## [Backlog Overview (pre-project estimation)](./docs/project_backlog_overview.md)
+
 ## 0. Objective
 
 Deliver a complete Angular frontend for SkillSwap that:
@@ -16,10 +19,6 @@ Base API:
 
 All endpoints are relative to this base URL.
 
-------
-## Backlog Overview (pre-project estimation)
-[view here](./docs/project_backlog_overview.md)
-------
 
 ## 1. System Boundaries
 
