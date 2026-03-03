@@ -4,11 +4,162 @@ Work must proceed strictly in dependency order.
 
 Order:
 
-Infrastructure → Domain Models → Domain Services → Layout & Routing → UI Business Flow → Coverage → Hardening
+Domain Models → Infrastructure → Domain Services → Shared UI → Layout & Routing → UI Business Flow → Coverage → Hardening
 
 ---
 
-# EPIC P0 – Infrastructure
+# EPIC P0 – Domain Models
+
+All API data contracts must be defined before infrastructure wiring or UI work begins.
+
+---
+
+## P0.1 – User Model
+
+* Create `core/models/user.model.ts`
+* Define full user shape according to API
+* Mark optional fields correctly
+
+Acceptance Criteria:
+
+* No `any` types
+* rating_avg and completed_jobs typed correctly
+
+---
+
+## P0.2 – Job Model
+
+* Create `core/models/job.model.ts`
+* Define job structure
+* Define status as union:
+
+  * 'open'
+  * 'in_progress'
+  * 'completed'
+
+Acceptance Criteria:
+
+* Status strictly typed
+* Owner and freelancer summaries typed correctly
+
+---
+
+## P0.3 – Proposal Model
+
+* Create `core/models/proposal.model.ts`
+* Define proposal structure
+
+Acceptance Criteria:
+
+* price typed as number
+* status typed correctly
+
+---
+
+## P0.4 – Review Model
+
+* Create `core/models/review.model.ts`
+* Define review structure
+
+Acceptance Criteria:
+
+* rating strictly typed as number
+* target_id typed correctly
+
+---
+
+# EPIC P1 – Infrastructure
+
+These tasks establish the technical foundation of the application.
+
+---
+
+## P1.1 – API Configuration
+
+* Create `core/config/api.config.ts`
+* Export `API_BASE_URL`
+
+Acceptance Criteria:
+
+* Base URL is centralized
+* No hardcoded URLs elsewhere
+
+---
+
+## P1.2 – HTTP Wrapper
+
+* Create `core/http/api-client.ts`
+* Implement:
+
+  * get()
+  * post()
+  * patch()
+  * delete()
+* Prefix base URL automatically
+* Catch HttpErrorResponse
+* Normalize errors
+
+Acceptance Criteria:
+
+* All services use api-client
+* No direct HttpClient usage in features
+
+---
+
+## P1.3 – ApiError Model & Error Normalization
+
+* Create `core/http/api-error.model.ts`
+* Create `core/http/error.util.ts`
+* Extract `{ "error": "..." }` safely
+* Fallback for unexpected shapes
+
+Acceptance Criteria:
+
+* Backend error messages displayed verbatim
+* No unhandled HttpErrorResponse
+
+---
+
+## P1.4 – Authentication Store
+
+* Create `core/auth/auth.store.ts`
+* Store token + user
+* Persist token in localStorage
+* Expose authentication helpers
+
+Acceptance Criteria:
+
+* Token persists across refresh
+* isAuthenticated() works correctly
+
+---
+
+## P1.5 – JWT Interceptor
+
+* Create `core/interceptors/auth.interceptor.ts`
+* Attach `Authorization: Bearer <token>`
+* Handle 401:
+
+  * Clear session
+  * Redirect to /login
+
+Acceptance Criteria:
+
+* Protected endpoints include header
+* Expired token redirects properly
+
+---
+
+## P1.6 – Auth Guard
+
+* Create `core/guards/auth.guard.ts`
+* Protect authenticated routes
+* Preserve attempted URL
+
+Acceptance Criteria:
+
+* Unauthenticated access blocked
+* Redirect flow works
 
 These tasks establish the technical foundation of the application.
 
@@ -100,66 +251,6 @@ Acceptance Criteria:
 
 * Unauthenticated access blocked
 * Redirect flow works
-
----
-
-# EPIC P1 – Domain Models
-
-All API data contracts must be defined before services or UI work begins.
-
----
-
-## P1.1 – User Model
-
-* Create `core/models/user.model.ts`
-* Define full user shape according to API
-* Mark optional fields correctly
-
-Acceptance Criteria:
-
-* No `any` types
-* rating_avg and completed_jobs typed correctly
-
----
-
-## P1.2 – Job Model
-
-* Create `core/models/job.model.ts`
-* Define job structure
-* Define status as union:
-
-  * 'open'
-  * 'in_progress'
-  * 'completed'
-
-Acceptance Criteria:
-
-* Status strictly typed
-* Owner and freelancer summaries typed correctly
-
----
-
-## P1.3 – Proposal Model
-
-* Create `core/models/proposal.model.ts`
-* Define proposal structure
-
-Acceptance Criteria:
-
-* price typed as number
-* status typed correctly
-
----
-
-## P1.4 – Review Model
-
-* Create `core/models/review.model.ts`
-* Define review structure
-
-Acceptance Criteria:
-
-* rating strictly typed as number
-* target_id typed correctly
 
 ---
 
@@ -259,9 +350,180 @@ Acceptance Criteria:
 
 * Typed stats model
 
+--- (API Mapping Layer)
+
+All backend endpoints must be mapped before UI implementation.
+
 ---
 
-# EPIC P3 – Layout & Routing Skeleton
+## P2.1 – Auth Service
+
+* Implement `auth.service.ts`
+* Map:
+
+  * POST /auth/register
+  * POST /auth/login
+
+Acceptance Criteria:
+
+* Typed responses
+* 409 suggested_username supported
+* Errors propagate as ApiError
+
+---
+
+## P2.2 – Users Service
+
+* Map:
+
+  * GET /users/me
+  * GET /users/:username
+
+Acceptance Criteria:
+
+* Typed responses
+* 404 handled properly
+
+---
+
+## P2.3 – Jobs Service
+
+* Map:
+
+  * POST /jobs/search
+  * POST /jobs
+  * GET /jobs/:id
+  * PATCH /jobs/:id
+  * GET /jobs/my-postings
+  * PATCH /jobs/:id/complete
+
+Acceptance Criteria:
+
+* All documented errors supported
+* Typed request and response bodies
+
+---
+
+## P2.4 – Proposals Service
+
+* Map:
+
+  * POST /jobs/:job_id/proposals
+  * GET /jobs/:job_id/proposals
+  * PATCH /proposals/:proposal_id/accept
+  * GET /proposals/my-bids
+  * DELETE /proposals/:proposal_id
+
+Acceptance Criteria:
+
+* 409 pending proposal handled
+* 400 invalid state handled
+* 403 forbidden handled
+
+---
+
+## P2.5 – Reviews Service
+
+* Map:
+
+  * POST /jobs/:job_id/reviews
+  * GET /reviews/user/:user_id
+
+Acceptance Criteria:
+
+* rating validated at type level
+* 409 duplicate review handled
+
+---
+
+## P2.6 – Platform Service
+
+* Map:
+
+  * GET /platform/stats
+
+Acceptance Criteria:
+
+* Typed stats model
+
+---
+
+# EPIC P3 – Shared UI Primitives
+
+Reusable UI components must be implemented before feature pages to guarantee consistency.
+
+---
+
+## P3.1 – Alert Components
+
+* Implement `alert-error`
+* Implement `alert-success`
+
+Acceptance Criteria:
+
+* Accept `message: string` input
+* Pure presentation components
+* No API logic
+
+---
+
+## P3.2 – Loading Component
+
+* Implement `spinner`
+
+Acceptance Criteria:
+
+* Usable inline in any page
+* No business logic
+
+---
+
+## P3.3 – Empty State Component
+
+* Implement `empty-state`
+
+Acceptance Criteria:
+
+* Accept title and message inputs
+* Reusable across list pages
+
+---
+
+## P3.4 – Confirm Dialog
+
+* Implement `confirm-dialog`
+
+Acceptance Criteria:
+
+* Emits confirm / cancel events
+* Used for destructive or irreversible actions
+
+---
+
+## P3.5 – Rating Stars Component
+
+* Implement `rating-stars`
+
+Acceptance Criteria:
+
+* Display-only component
+* Accept numeric rating input
+
+---
+
+## P3.6 – Form Helpers
+
+* Implement `field-error`
+* Implement `form-error-summary`
+
+Acceptance Criteria:
+
+* Display reactive form validation errors
+* Display API error messages clearly
+
+---
+
+# EPIC P4 – Layout & Routing Skeleton
 
 Routing must be stable before building pages.
 
