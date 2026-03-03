@@ -1,78 +1,84 @@
-# SkillSwap – GitHub Project Backlog (Hierarchical)
+# SkillSwap – GitHub Project Backlog (Complete, Ordered)
 
-Work must proceed strictly in dependency order.
+Work must proceed strictly in dependency order:
 
-Order:
-
-Domain Models → Infrastructure → Domain Services → Shared UI → Layout & Routing → UI Business Flow → Coverage → Hardening
+**P0 Domain & DTO Contracts → P1 Infrastructure → P2 Domain Services → P3 Shared UI → P4 Layout & Routing → P5 Mandatory Flow → P6 Coverage → P7 UX Hardening**
 
 ---
 
-# EPIC P0 – Domain Models
+# EPIC P0 – Domain & DTO Contracts
 
-All API data contracts must be defined before infrastructure wiring or UI work begins.
+Purpose: define type contracts before wiring infrastructure/services/UI.
 
----
+## P0.1 – Domain Models (Response Shapes)
 
-## P0.1 – User Model
+Create/confirm models under `core/models/`:
 
-* Create `core/models/user.model.ts`
-* Define full user shape according to API
-* Mark optional fields correctly
+* `user.model.ts`
+* `job.model.ts`
+* `proposal.model.ts`
+* `review.model.ts`
 
 Acceptance Criteria:
 
-* No `any` types
-* rating_avg and completed_jobs typed correctly
+* No `any`
+* Optional fields marked correctly
+* Job status typed as union: `'open' | 'in_progress' | 'completed'`
 
 ---
 
-## P0.2 – Job Model
+## P0.2 – Request DTOs (Write Shapes)
 
-* Create `core/models/job.model.ts`
-* Define job structure
-* Define status as union:
+Create request DTO definitions (folder location stays under `core/models/` to preserve agreed structure; use a subfolder if desired, e.g. `core/models/dto/`).
 
-  * 'open'
-  * 'in_progress'
-  * 'completed'
+Minimum required DTOs:
+
+Auth:
+
+* `register.dto.ts` (name, username, email, password, bio, skills[])
+* `login.dto.ts` (email, password)
+
+Jobs:
+
+* `job-search.dto.ts` (category?, status?, min_budget?)
+* `job-create.dto.ts` (title, description, budget, category)
+* `job-update.dto.ts` (partial: title?, description?, budget?, category?, status?)
+
+Proposals:
+
+* `proposal-create.dto.ts` (price, cover_letter|message)
+
+Reviews:
+
+* `review-create.dto.ts` (target_id, rating, message?)
 
 Acceptance Criteria:
 
-* Status strictly typed
-* Owner and freelancer summaries typed correctly
+* Services do not build inline request object literals (services take DTOs)
+* PATCH uses update DTO with optional fields
 
 ---
 
-## P0.3 – Proposal Model
+## P0.3 – Response DTOs (Non-Domain Wrappers)
 
-* Create `core/models/proposal.model.ts`
-* Define proposal structure
+Create response DTOs where API returns wrappers instead of pure domain models.
+
+Minimum required response DTOs:
+
+* `login-response.dto.ts` (token, user)
+* `register-response.dto.ts` (message, user)
+* `platform-stats.model.ts` (total_users, active_jobs, total_value_moved)
 
 Acceptance Criteria:
 
-* price typed as number
-* status typed correctly
+* Services return typed wrappers where applicable
+* No UI guesses about wrapper shapes
 
 ---
 
-## P0.4 – Review Model
+# EPIC P1 – Infrastructure (Blockers)
 
-* Create `core/models/review.model.ts`
-* Define review structure
-
-Acceptance Criteria:
-
-* rating strictly typed as number
-* target_id typed correctly
-
----
-
-# EPIC P1 – Infrastructure
-
-These tasks establish the technical foundation of the application.
-
----
+These tasks must be completed before service and UI work.
 
 ## P1.1 – API Configuration
 
@@ -146,7 +152,7 @@ Acceptance Criteria:
 Acceptance Criteria:
 
 * Protected endpoints include header
-* Expired token redirects properly
+* Expired/invalid token redirects properly
 
 ---
 
@@ -161,499 +167,420 @@ Acceptance Criteria:
 * Unauthenticated access blocked
 * Redirect flow works
 
-These tasks establish the technical foundation of the application.
-
 ---
 
-## P0.1 – API Configuration
+# EPIC P2 – Domain Services (API Mapping)
 
-* Create `core/config/api.config.ts`
-* Export `API_BASE_URL`
+Purpose: map every endpoint into a typed service before building pages.
 
-Acceptance Criteria:
+Acceptance Criteria (applies to all services):
 
-* Base URL is centralized
-* No hardcoded URLs elsewhere
-
----
-
-## P0.2 – HTTP Wrapper
-
-* Create `core/http/api-client.ts`
-* Implement:
-
-  * get()
-  * post()
-  * patch()
-  * delete()
-* Prefix base URL automatically
-* Catch HttpErrorResponse
-* Normalize errors
-
-Acceptance Criteria:
-
-* All services use api-client
-* No direct HttpClient usage in features
-
----
-
-## P0.3 – ApiError Model & Error Normalization
-
-* Create `core/http/api-error.model.ts`
-* Create `core/http/error.util.ts`
-* Extract `{ "error": "..." }` safely
-* Fallback for unexpected shapes
-
-Acceptance Criteria:
-
-* Backend error messages displayed verbatim
-* No unhandled HttpErrorResponse
-
----
-
-## P0.4 – Authentication Store
-
-* Create `core/auth/auth.store.ts`
-* Store token + user
-* Persist token in localStorage
-* Expose authentication helpers
-
-Acceptance Criteria:
-
-* Token persists across refresh
-* isAuthenticated() works correctly
-
----
-
-## P0.5 – JWT Interceptor
-
-* Create `core/interceptors/auth.interceptor.ts`
-* Attach `Authorization: Bearer <token>`
-* Handle 401:
-
-  * Clear session
-  * Redirect to /login
-
-Acceptance Criteria:
-
-* Protected endpoints include header
-* Expired token redirects properly
-
----
-
-## P0.6 – Auth Guard
-
-* Create `core/guards/auth.guard.ts`
-* Protect authenticated routes
-* Preserve attempted URL
-
-Acceptance Criteria:
-
-* Unauthenticated access blocked
-* Redirect flow works
-
----
-
-# EPIC P2 – Domain Services (API Mapping Layer)
-
-All backend endpoints must be mapped before UI implementation.
+* Uses `api-client` only
+* Typed inputs via DTOs
+* Typed outputs via domain models / response DTOs
+* All backend errors propagate as `ApiError` without being rewritten
 
 ---
 
 ## P2.1 – Auth Service
 
-* Implement `auth.service.ts`
-* Map:
+File: `core/services/auth.service.ts`
 
-  * POST /auth/register
-  * POST /auth/login
+Endpoints:
+
+* `POST /auth/register`
+* `POST /auth/login`
 
 Acceptance Criteria:
 
-* Typed responses
-* 409 suggested_username supported
-* Errors propagate as ApiError
+* Register returns typed `register-response` wrapper
+* Login returns typed `login-response` wrapper
+* 409 suggested_username supported in error payload handling
 
 ---
 
 ## P2.2 – Users Service
 
-* Map:
+File: `core/services/users.service.ts`
 
-  * GET /users/me
-  * GET /users/:username
+Endpoints:
 
-Acceptance Criteria:
-
-* Typed responses
-* 404 handled properly
+* `GET /users/me`
+* `GET /users/<username>`
 
 ---
 
 ## P2.3 – Jobs Service
 
-* Map:
+File: `core/services/jobs.service.ts`
 
-  * POST /jobs/search
-  * POST /jobs
-  * GET /jobs/:id
-  * PATCH /jobs/:id
-  * GET /jobs/my-postings
-  * PATCH /jobs/:id/complete
+Endpoints:
 
-Acceptance Criteria:
-
-* All documented errors supported
-* Typed request and response bodies
+* `POST /jobs/search`
+* `POST /jobs`
+* `GET /jobs/<job_id>`
+* `PATCH /jobs/<job_id>`
+* `GET /jobs/my-postings`
+* `PATCH /jobs/<job_id>/complete`
 
 ---
 
 ## P2.4 – Proposals Service
 
-* Map:
+File: `core/services/proposals.service.ts`
 
-  * POST /jobs/:job_id/proposals
-  * GET /jobs/:job_id/proposals
-  * PATCH /proposals/:proposal_id/accept
-  * GET /proposals/my-bids
-  * DELETE /proposals/:proposal_id
+Endpoints:
 
-Acceptance Criteria:
-
-* 409 pending proposal handled
-* 400 invalid state handled
-* 403 forbidden handled
+* `POST /jobs/<job_id>/proposals`
+* `GET /jobs/<job_id>/proposals`
+* `PATCH /proposals/<proposal_id>/accept`
+* `GET /proposals/my-bids`
+* `DELETE /proposals/<proposal_id>`
 
 ---
 
 ## P2.5 – Reviews Service
 
-* Map:
+File: `core/services/reviews.service.ts`
 
-  * POST /jobs/:job_id/reviews
-  * GET /reviews/user/:user_id
+Endpoints:
 
-Acceptance Criteria:
-
-* rating validated at type level
-* 409 duplicate review handled
+* `POST /jobs/<job_id>/reviews`
+* `GET /reviews/user/<user_id>`
 
 ---
 
 ## P2.6 – Platform Service
 
-* Map:
+File: `core/services/platform.service.ts`
 
-  * GET /platform/stats
+Endpoint:
 
-Acceptance Criteria:
-
-* Typed stats model
-
---- (API Mapping Layer)
-
-All backend endpoints must be mapped before UI implementation.
+* `GET /platform/stats`
 
 ---
 
-## P2.1 – Auth Service
+# EPIC P3 – Shared UI (Reusable Components)
 
-* Implement `auth.service.ts`
-* Map:
+Purpose: ensure consistent error/loading/empty patterns across all pages.
 
-  * POST /auth/register
-  * POST /auth/login
+## P3.1 – Alerts
 
-Acceptance Criteria:
-
-* Typed responses
-* 409 suggested_username supported
-* Errors propagate as ApiError
+* `alert-error` (Input: message)
+* `alert-success` (Input: message)
 
 ---
 
-## P2.2 – Users Service
+## P3.2 – Loading
 
-* Map:
-
-  * GET /users/me
-  * GET /users/:username
-
-Acceptance Criteria:
-
-* Typed responses
-* 404 handled properly
+* `spinner`
 
 ---
 
-## P2.3 – Jobs Service
+## P3.3 – Empty State
 
-* Map:
-
-  * POST /jobs/search
-  * POST /jobs
-  * GET /jobs/:id
-  * PATCH /jobs/:id
-  * GET /jobs/my-postings
-  * PATCH /jobs/:id/complete
-
-Acceptance Criteria:
-
-* All documented errors supported
-* Typed request and response bodies
-
----
-
-## P2.4 – Proposals Service
-
-* Map:
-
-  * POST /jobs/:job_id/proposals
-  * GET /jobs/:job_id/proposals
-  * PATCH /proposals/:proposal_id/accept
-  * GET /proposals/my-bids
-  * DELETE /proposals/:proposal_id
-
-Acceptance Criteria:
-
-* 409 pending proposal handled
-* 400 invalid state handled
-* 403 forbidden handled
-
----
-
-## P2.5 – Reviews Service
-
-* Map:
-
-  * POST /jobs/:job_id/reviews
-  * GET /reviews/user/:user_id
-
-Acceptance Criteria:
-
-* rating validated at type level
-* 409 duplicate review handled
-
----
-
-## P2.6 – Platform Service
-
-* Map:
-
-  * GET /platform/stats
-
-Acceptance Criteria:
-
-* Typed stats model
-
----
-
-# EPIC P3 – Shared UI Primitives
-
-Reusable UI components must be implemented before feature pages to guarantee consistency.
-
----
-
-## P3.1 – Alert Components
-
-* Implement `alert-error`
-* Implement `alert-success`
-
-Acceptance Criteria:
-
-* Accept `message: string` input
-* Pure presentation components
-* No API logic
-
----
-
-## P3.2 – Loading Component
-
-* Implement `spinner`
-
-Acceptance Criteria:
-
-* Usable inline in any page
-* No business logic
-
----
-
-## P3.3 – Empty State Component
-
-* Implement `empty-state`
-
-Acceptance Criteria:
-
-* Accept title and message inputs
-* Reusable across list pages
+* `empty-state` (Inputs: title, message)
 
 ---
 
 ## P3.4 – Confirm Dialog
 
-* Implement `confirm-dialog`
-
-Acceptance Criteria:
-
-* Emits confirm / cancel events
-* Used for destructive or irreversible actions
+* `confirm-dialog` (confirm/cancel outputs)
 
 ---
 
-## P3.5 – Rating Stars Component
+## P3.5 – Rating Stars
 
-* Implement `rating-stars`
-
-Acceptance Criteria:
-
-* Display-only component
-* Accept numeric rating input
+* `rating-stars` (Input: rating)
 
 ---
 
 ## P3.6 – Form Helpers
 
-* Implement `field-error`
-* Implement `form-error-summary`
+* `field-error`
+* `form-error-summary`
 
 Acceptance Criteria:
 
-* Display reactive form validation errors
-* Display API error messages clearly
+* Pure presentation / form utilities
+* No API calls
 
 ---
 
-# EPIC P4 – Layout & Routing Skeleton
+# EPIC P4 – Layout & Routing
 
-Routing must be stable before building pages.
+Purpose: stable navigation shell and required route map.
+
+## P4.1 – Root Layout
+
+* Implement `app.component.html` layout
+* Header + Navbar + router-outlet + Footer
 
 ---
 
-## P3.1 – Root Layout
+## P4.2 – Static Navbar (Pre-Auth Binding)
 
-* Implement `app.component.html`
-* Render header, navbar, router-outlet, footer
+* Implement navigation links without auth state coupling
+* Links required at minimum:
+
+  * Jobs
+  * Platform Stats
+  * Login
+  * Register
+
+---
+
+## P4.3 – Routing Map (Single File)
+
+Implement `app.routes.ts` with:
+
+* `/login`
+* `/register`
+* `/jobs`
+* `/jobs/create`
+* `/jobs/my-postings`
+* `/jobs/:id`
+* `/jobs/:id/edit`
+* `/proposals/my-bids`
+* `/users/me`
+* `/users/:username`
+* `/platform/stats`
+
+---
+
+## P4.4 – Guard Integration
+
+* Apply `auth.guard` to protected routes
 
 Acceptance Criteria:
 
-* Layout renders consistently
-* No business logic in layout
+* Unauthenticated access redirects to /login
+* Attempted URL preserved
 
 ---
 
-## P3.2 – Static Navbar
+## P4.5 – Navbar Auth Binding (Post-Login)
 
-* Implement navigation links only
-* No auth state logic yet
+Upgrade navbar after P5.2 is complete.
+
+* Show guest links when unauthenticated
+* Show authenticated links when authenticated:
+
+  * Jobs
+  * My Postings
+  * My Bids
+  * My Profile
+  * Platform Stats
+  * Logout
+* Logout clears session and navigates to login (or jobs)
 
 Acceptance Criteria:
 
-* Navigation works
+* Navbar updates without reload after login/logout
 
 ---
 
-## P3.3 – Define Route Map
+# EPIC P5 – Mandatory Business Flow (Grading Core)
 
-Declare all routes in `app.routes.ts`:
-
-* /login
-* /register
-* /jobs
-* /jobs/create
-* /jobs/my-postings
-* /jobs/:id
-* /jobs/:id/edit
-* /proposals/my-bids
-* /users/me
-* /users/:username
-* /platform/stats
-
-Acceptance Criteria:
-
-* All required routes declared
-* No missing paths
-
----
-
-## P3.4 – Guard Integration
-
-* Attach auth.guard to protected routes
-
-Acceptance Criteria:
-
-* Protected routes redirect to /login
-* Redirect flow preserved
-
----
-
-# EPIC P4 – Mandatory Business Flow (UI Layer)
-
-Implements full grading flow end-to-end.
-
----
-
-## P4.1 – Register Page
-
-## P4.2 – Login Page
-
-## P4.3 – Job Search Page
-
-## P4.4 – Create Job Page
-
-## P4.5 – Job Details Page
-
-## P4.6 – Submit Proposal
-
-## P4.7 – Owner Proposal List
-
-## P4.8 – Complete Job
-
-## P4.9 – Submit Reviews
-
-Each must:
+Each page must:
 
 * Use services only
+* Track loading state
+* Disable submits while pending
 * Display backend errors verbatim
-* Manage loading state
 
 ---
 
-# EPIC P5 – Completeness & Coverage
+## P5.1 – Register Page (`/register`)
 
-## P5.1 – My Profile Page
-
-## P5.2 – Public Profile Page
-
-## P5.3 – My Postings Page
-
-## P5.4 – My Bids Page
-
-## P5.5 – User Reviews Page
-
-## P5.6 – Platform Stats Page
+* Reactive form for required fields
+* Display suggested_username when 409 includes it
+* On success: redirect to /login
 
 ---
 
-# EPIC P6 – UX Hardening
+## P5.2 – Login Page (`/login`)
 
-## P6.1 – Global Loading Handling
+* On success:
 
-## P6.2 – Global Error Handling
+  * store token
+  * store user
+  * redirect to intended URL
 
-## P6.3 – Confirmation Enforcement
+---
 
-## P6.4 – Empty State Coverage
+## P5.3 – Job Search Page (`/jobs`)
 
-## P6.5 – UI Business Rule Enforcement
+* Filters: category, status (default open), min_budget
+* Empty state handling
+
+---
+
+## P5.4 – Create Job Page (`/jobs/create`)
+
+* Protected
+* Fields: title, description, budget, category
+
+---
+
+## P5.5 – Job Details Page (`/jobs/:id`)
+
+* Protected
+* Displays job details + owner/freelancer summaries
+* Implements action panel rules (see P7.5)
+
+---
+
+## P5.6 – Owner Proposals Page (`/jobs/:id` action → proposals list)
+
+* Owner-only access
+* Lists proposals for job
+
+---
+
+## P5.7 – Accept Proposal
+
+* Accept action (confirm dialog)
+* After accept:
+
+  * job becomes in_progress
+  * refresh job details
+
+---
+
+## P5.8 – Complete Job
+
+* Complete action (confirm dialog)
+* Allowed only when in_progress
+* Allowed only for owner or assigned freelancer
+
+---
+
+## P5.9 – Submit Proposal
+
+* Submit from job details
+* Prevent own job submission
+* Prevent if job not open
+* Prevent multiple pending proposals
+
+---
+
+## P5.10 – Submit Reviews
+
+* From completed job
+* Both participants can review the other
+* Prevent self-review
+* Prevent duplicates
+* Refresh job/profile after submission to show rating updates
+
+---
+
+# EPIC P6 – Completeness & Coverage
+
+## P6.1 – My Profile Page (`/users/me`)
+
+* Display full authenticated profile
+
+---
+
+## P6.2 – Public Profile Page (`/users/:username`)
+
+* Display public profile fields
+
+---
+
+## P6.3 – My Postings Page (`/jobs/my-postings`)
+
+* Display jobs created by logged-in user
+
+---
+
+## P6.4 – My Bids Page (`/proposals/my-bids`)
+
+* Display submitted proposals
+* Delete proposal if pending (confirm dialog)
+
+---
+
+## P6.5 – User Reviews Page
+
+* Display reviews for a given user id
+
+---
+
+## P6.6 – Platform Stats Page (`/platform/stats`)
+
+* Display platform statistics
+
+---
+
+# EPIC P7 – UX Hardening (Required Behaviors)
+
+## P7.1 – Global Pending State Discipline
+
+* Disable submit while pending on every form
+* Prevent double-click actions
+
+---
+
+## P7.2 – Consistent Error Display
+
+* Standardize error surfaces:
+
+  * top-of-form API error summary
+  * inline field errors
+* Ensure all 400/401/403/404/409 display verbatim messages
+
+---
+
+## P7.3 – Confirmation Enforcement
+
+Confirm dialog required for:
+
+* Accept proposal
+* Complete job
+* Delete proposal
+
+---
+
+## P7.4 – Empty State Coverage
+
+* All list pages show empty-state when empty
+
+---
+
+## P7.5 – UI Business Rule Enforcement (Action Matrix)
+
+Job Details actions:
+
+If `status=open`:
+
+* Non-owner can submit proposal (only if no pending proposal)
+* Owner can view proposals
+
+If `status=in_progress`:
+
+* Owner or assigned freelancer can complete
+
+If `status=completed`:
+
+* Owner and freelancer can review the other participant
+* If already reviewed: disable
+
+Backend remains authoritative.
+All resulting 400/401/403/404/409 errors must display.
 
 ---
 
 # Definition of Done
 
-* Full mandatory workflow functions without error
-* All documented backend errors handled
-* JWT handling correct
-* No mocked data
-* Clean separation of concerns
-* Repository structure matches architecture
-* Ready for demonstration video
+Project is complete when:
+
+* Mandatory workflow fully functions:
+
+  * Register → Login → Post Job → Submit Proposal → Accept Proposal → Complete Job → Leave Reviews → Rating updates
+* JWT is stored and used via interceptor
+* 401 triggers redirect to /login
+* All documented backend errors are displayed verbatim
+* No mocked data or simulated responses
+* Code follows the agreed structure and separation of concerns
