@@ -2,8 +2,8 @@
 
 
 export type CreateReviewDto = {
-    target_id: String;
+    target_id: string;
     rating   : number;
-    message  : String;
+    message  : string;
 
 }
