@@ -4,25 +4,37 @@ import { User } from '../models/user.model'
 
 @Injectable({providedIn: 'root'})
 export class AuthStore {
-  private readonly KEY ="platform_authn"
+  private readonly TOKEN_KEY ="platform_authn"
+  private readonly USER_KEY ="platform_user"
 
 
-  readonly token = signal<string | null>(localStorage.getItem(this.KEY));
-  readonly user  = signal<User   | null>(null)
-  readonly isAuthenticated = computed(() => !!this.token());
+  private token = localStorage.getItem(this.TOKEN_KEY);
+
+  private user  = this.parseUser();
+
+  private isAuthenticated = this.token !== null;
 
 
-  login(token: string, user: User){
-    localStorage.setItem(this.KEY,token);
-
-    this.token.set(token);
-    this.user.set(user);
+  StoreSession(token: string, user: User){
+    localStorage.setItem(this.TOKEN_KEY,token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user))
+    this.token = token;
+    this.user  = user;
   }
 
-  logout() {
-    localStorage.removeItem(this.KEY);
-    this.token.set(null);
-    this.user.set(null);
+  ClearSession() {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    this.token = null;
+    this.user  = null;
   }
+
+
+  private parseUser(): User | null{
+    const raw = localStorage.getItem(this.USER_KEY);
+
+    return raw ? JSON.parse(raw): null;
+  }
+
 }
 
