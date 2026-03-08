@@ -9,9 +9,7 @@ export class AuthStore {
 
 
   readonly token = signal<string | null>(localStorage.getItem(this.TOKEN_KEY));
-
   readonly isAuthenticated = computed(() => !!this.token());
-
   readonly user = signal<User | null>(this.ParseUser());
 
 
@@ -32,6 +30,7 @@ export class AuthStore {
 
   private ParseUser(): User | null{
     const raw = localStorage.getItem(this.USER_KEY);
+
     return raw ? JSON.parse(raw): null;
   }
 
