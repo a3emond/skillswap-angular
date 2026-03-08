@@ -8,13 +8,14 @@ import { ApiClient } from '../http/api-client';
 import { User } from '../models/user.model';
 import { U } from '@angular/cdk/keycodes';
 import { UserNotFoundError } from './user_service-user_not_found_error.model';
+import { AuthStore } from '../auth/auth.store';
 
 
 @Injectable({
     providedIn: 'root'
 }) export class UsersService {
 
-    readonly #authStore: any = {} /*inject(AuthStore) // Not in project yet so use object as placeholder*/;
+    readonly #authStore: AuthStore = inject(AuthStore);
     readonly #http: ApiClient = inject(ApiClient);
     readonly #snackBar: MatSnackBar = inject(MatSnackBar);
 
