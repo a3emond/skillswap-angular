@@ -40,7 +40,7 @@ import { UserNotFoundError } from './user_service-user_not_found_error.model';
                 // Handle error, e.g., log it or show a notification
                 console.error('Failed to fetch user profile', err);
                 // Return a fallback value or rethrow the error                
-                this.#snackBar.open(err.message, 'Close', { duration: 3000 });
+                this.#snackBar.open('Failed to fetch user profile', 'Close', { duration: 3000 });
                 return throwError(() => new UserNotFoundError('User profile of authenticated user not found'));
             })
         );
