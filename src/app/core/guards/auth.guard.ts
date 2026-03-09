@@ -76,7 +76,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   {
     queryParams: {
       returnUrl: state.url,
-      reason: 'session_expired' // will produce a URL like : /login?returnUrl=/jobs/42&reason=session_expired
+      reason: 'access_restricted' // will produce a URL like : /login?returnUrl=/jobs/42&reason=session_expired
     }
   }
   /*
