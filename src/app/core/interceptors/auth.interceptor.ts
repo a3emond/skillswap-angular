@@ -1,7 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http'
 import { inject } from '@angular/core'
 import { Router } from '@angular/router'
-import { catchError, throwError } from 'rxjs'
+import { catchError, NEVER, throwError } from 'rxjs'
 
 import { AuthStore } from '../auth/auth.store'
 
@@ -77,12 +77,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
         store.clearSession()
 
+        //diff log mechanism
+        console.log("user session is expired");
+
         router.navigate(['/login'], {
           queryParams: {
             returnUrl: router.url,
             reason: 'session_expired' // will produce a URL like : /login?returnUrl=/jobs/42&reason=session_expired
           }
         })
+        // By returning NEVER, we gracefully cancel the ongoing request
+        // and prevent the error from propagating to the caller.
+        return NEVER
       }
 
       /*

@@ -63,16 +63,20 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true
   }
 
+  //diff log mechanism
+  console.log("user session is expired");
+
   /**
    * Otherwise redirect to login.
    * The attempted URL is preserved for post-login redirect.
    */
+
   return router.createUrlTree(
   ['/login'],
   {
     queryParams: {
       returnUrl: state.url,
-      reason: 'session_expired'
+      reason: 'session_expired' // will produce a URL like : /login?returnUrl=/jobs/42&reason=session_expired
     }
   }
   /*
@@ -83,7 +87,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   if (reason === 'session_expired') {
     this.apiError = 'Session expired. Please login again.'
   }
-    
+
   */
 )
 }
