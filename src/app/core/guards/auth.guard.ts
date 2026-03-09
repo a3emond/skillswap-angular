@@ -68,7 +68,22 @@ export const authGuard: CanActivateFn = (route, state) => {
    * The attempted URL is preserved for post-login redirect.
    */
   return router.createUrlTree(
-    ['/login'],
-    { queryParams: { returnUrl: state.url } }
-  )
+  ['/login'],
+  {
+    queryParams: {
+      returnUrl: state.url,
+      reason: 'session_expired'
+    }
+  }
+  /*
+  USAGE in Login component:
+
+  const reason = this.route.snapshot.queryParamMap.get('reason')
+
+  if (reason === 'session_expired') {
+    this.apiError = 'Session expired. Please login again.'
+  }
+    
+  */
+)
 }

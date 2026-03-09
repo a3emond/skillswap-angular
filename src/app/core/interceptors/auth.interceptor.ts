@@ -78,9 +78,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         store.clearSession()
 
         router.navigate(['/login'], {
-          queryParams: { returnUrl: router.url }
+          queryParams: {
+            returnUrl: router.url,
+            reason: 'session_expired' // will produce a URL like : /login?returnUrl=/jobs/42&reason=session_expired
+          }
         })
       }
+
+      /*
+      USAGE in Login component:
+
+      const reason = this.route.snapshot.queryParamMap.get('reason')
+
+      if (reason === 'session_expired') {
+        this.apiError = 'Session expired. Please login again.'
+      }
+
+      */
 
       return throwError(() => error)
     })
