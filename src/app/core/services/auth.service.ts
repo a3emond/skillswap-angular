@@ -42,6 +42,11 @@ export class AuthService {
                 })
             );
     }
+    Logout() {
+      if(this.#store.isAuthenticated()) {
+          this.#store.ClearSession()
+      }
+    }
 }
 
 /*
