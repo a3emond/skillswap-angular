@@ -7,6 +7,7 @@ import { catchError, Observable, throwError } from "rxjs";
 import { ApiError } from "../http/api-error.model";
 import { JobCreateDto } from "../models/dto/job-create.dto";
 import { AuthStore } from "../auth/auth.store";
+import { JobUpdateDto } from "../models/dto/job-update.dto";
 
 @Injectable({
     providedIn: 'root'
@@ -64,7 +65,7 @@ import { AuthStore } from "../auth/auth.store";
             };
             console.error('User is not authenticated', error);
             return throwError(() => error);
-        };
+        }
 
         return this.http.get<Job>(`/jobs/${jobId}`)
         .pipe(
@@ -74,6 +75,27 @@ import { AuthStore } from "../auth/auth.store";
             })
         );
     }
+
+    update(job_id: number, dto: JobUpdateDto): Observable<Job> {
+        if(!this.authStore.isAuthenticated()) {
+            const error: ApiError = {
+                status: 401,
+                message: "User is not authenticated"
+            };
+            console.error('User is not authenticated', error);
+            return throwError(() => error);
+        }
+
+        return this.http.patch<Job>(`/jobs/${job_id}`, dto)
+            .pipe(
+                catchError((err: ApiError) => {
+                    console.error(`Failed to update job with id ${job_id}`, err);
+                    return throwError(() => err);
+                })
+            );
+    }
+
+
 }
 
 export type MinBudgetError = ApiError & {
@@ -92,3 +114,7 @@ export type JobNotFoundError = ApiError & {
     message: "Job not found"
 };
 
+export type CompletionStatusError = ApiError & {
+    status: 400,
+    message: "Only in-progress jobs can be completed"
+};
