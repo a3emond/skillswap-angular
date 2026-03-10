@@ -55,6 +55,25 @@ import { AuthStore } from "../auth/auth.store";
                 })
             );
     }
+
+    getById(jobId: number): Observable<Job> {
+        if(!this.authStore.isAuthenticated()) {
+            const error: ApiError = {
+                status: 401,
+                message: "User is not authenticated"
+            };
+            console.error('User is not authenticated', error);
+            return throwError(() => error);
+        };
+
+        return this.http.get<Job>(`/jobs/${jobId}`)
+        .pipe(
+            catchError((err: ApiError) => {
+                console.error(`Failed to fetch job with id ${jobId}`, err);
+                return throwError(() => err);
+            })
+        );
+    }
 }
 
 export type MinBudgetError = ApiError & {
@@ -66,3 +85,10 @@ export type MissingRequiredFieldError = ApiError & {
     status: 400,
     message: "Missing required fields"
 };
+
+
+export type JobNotFoundError = ApiError & {
+    status: 404,
+    message: "Job not found"
+};
+
