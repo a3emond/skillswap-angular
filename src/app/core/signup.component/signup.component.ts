@@ -1,4 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { AuthService } from '../services/auth.service';
+import { RegisterDto } from '../models/dto/register.dto';
+import { ApiError } from '../http/api-error.model';
 
 @Component({
   selector: 'app-signup.component',
@@ -7,7 +10,7 @@ import { Component, inject, signal } from '@angular/core';
   styleUrl: './signup.component.css',
 })
 export class SignupComponent {
-    authService = inject(Auth);
+    authService = inject(AuthService);
 
     name            =signal<string | null>(null);
     errName         =signal<string | null>(null);
@@ -22,13 +25,41 @@ export class SignupComponent {
     errPassword     =signal<string | null>(null);
 
     bio             =signal<string | null>(null);
-    errBio          =signal<string | null>(null);
     skills:string[] =[];
+    //flag to make sure weither all necessary fields are valid
+    guard           =computed(()=>
+                              !!this.name()     &&
+                              !!this.username() &&
+                              !!this.email()    &&
+                              !!this.password()
+                    );
+    errMessage      =signal<string | null>(null);
 
 
-    Register() {
+    async Register() {
+        if(!this.guard()){
 
+          return;
+        }
+        const dto: RegisterDto = {
+            name    : this.name()     !,
+            username: this.username() !,
+            email   : this.email()    !,
+            password: this.password() !,
+            bio     : this.bio()  ?? '',
+            skills  : this.skills      ,
+        }
+        this.authService.Register(dto).subscribe({
+            next: (res) => {
+                this.errMessage.set(null);
+                console.log('Registration successful', res);
+            },
+            error: (err: ApiError) => {
+                this.errMessage.set(err.message || "An error occurred during registration");
+            }
+        });
     }
+
 
     SanitizeName(name: string){
         const trimmed = name.trim();

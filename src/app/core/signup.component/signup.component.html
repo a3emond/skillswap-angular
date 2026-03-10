@@ -1,1 +1,65 @@
-<p>signup.component works!</p>
+<div class="signup-container">
+  <h2>Create Your Account</h2>
+
+  @if (errMessage()) {
+    <div class="alert-error">
+      {{ errMessage() }}
+    </div>
+  }
+
+  <form (submit)="$event.preventDefault(); Register()">
+
+    <div class="form-field">
+      <label>Full Name</label>
+      <input #nameInput
+             type="text"
+             (input)="SanitizeName(nameInput.value)"
+             placeholder="John Doe">
+      @if (errName()) { <span class="error">{{ errName() }}</span> }
+    </div>
+
+    <div class="form-field">
+      <label>Username</label>
+      <input #userInput
+             type="text"
+             (input)="SanitizeUsername(userInput.value)"
+             placeholder="johndoe123">
+      @if (errUsername()) { <span class="error">{{ errUsername() }}</span> }
+    </div>
+
+    <div class="form-field">
+      <label>Email Address</label>
+      <input #emailInput
+             type="email"
+             (input)="SanitizeEmail(emailInput.value)"
+             placeholder="john@example.com">
+      @if (errEmail()) { <span class="error">{{ errEmail() }}</span> }
+    </div>
+
+    <div class="form-field">
+      <label>Password</label>
+      <input #passInput
+             type="password"
+             (input)="SanitizePassword(passInput.value)"
+             placeholder="********">
+      @if (errPassword()) { <span class="error">{{ errPassword() }}</span> }
+    </div>
+
+    <div class="form-field">
+      <label>Skills</label>
+      <div class="skills-input-group">
+        <input #skillInput type="text" placeholder="e.g. Angular">
+        <button type="button" (click)="SanitizeSkillInsertion(skillInput.value); skillInput.value=''">Add</button>
+      </div>
+      <div class="skills-tags">
+        @for (skill of skills; track skill) {
+          <span class="tag">{{ skill }}</span>
+        }
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="!guard()" class="register-btn">
+      Register
+    </button>
+  </form>
+</div>
