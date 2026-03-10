@@ -1,0 +1,48 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4; /* Light grey background to make the form pop */
+}
+
+form {
+  background: white;
+  padding: 2rem;
+  border: 2px solid black; /* The black lines you wanted */
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Spacing between your inputs */
+  box-shadow: 5px 5px 0px black; /* Optional: cool "neo-brutalism" shadow */
+}
+
+/* Make your inputs look consistent with the black theme */
+input, textarea {
+  border: 1px solid black;
+  padding: 10px;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box; /* Prevents input from overflowing the form */
+}
+
+button {
+  background: black;
+  color: white;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  background: #333;
+}
