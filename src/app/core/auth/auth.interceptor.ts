@@ -4,7 +4,6 @@ import { MatSnackBar }            from '@angular/material/snack-bar';
 import { Router }                 from "@angular/router";
 import { catchError, NEVER, of, throwError } from 'rxjs';
 import { AuthStore }              from "../auth/auth.store"
-import { InternalErrorException } from "./internal-error.exception";
 
 
 
