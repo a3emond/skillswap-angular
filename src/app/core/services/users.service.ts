@@ -6,8 +6,6 @@ import { catchError, of, throwError } from 'rxjs';
 import { ApiError } from '../http/api-error.model';
 import { ApiClient } from '../http/api-client';
 import { User } from '../models/user.model';
-import { U } from '@angular/cdk/keycodes';
-import { UserNotFoundError } from './user_service-user_not_found_error.model';
 import { AuthStore } from '../auth/auth.store';
 
 
@@ -40,9 +38,8 @@ import { AuthStore } from '../auth/auth.store';
             catchError((err: ApiError) => {
                 // Handle error, e.g., log it or show a notification
                 console.error('Failed to fetch user profile', err);
-                // Return a fallback value or rethrow the error
-                this.#snackBar.open('Failed to fetch user profile', 'Close', { duration: 3000 });
-                return throwError(() => new UserNotFoundError('User profile of authenticated user not found'));
+
+                return throwError(() => err);
             })
         );
 
@@ -64,8 +61,8 @@ import { AuthStore } from '../auth/auth.store';
                 // Handle error, e.g., log it or show a notification
                 console.error(`Failed to fetch user with ID ${userId}`, err);
                 // Return a fallback value or rethrow the error
-                this.#snackBar.open(err.message, 'Close', { duration: 3000 });
-                return throwError(() => new UserNotFoundError(`User with ID ${userId} not found`));
+                return throwError(() => err);
+
             })
         );
     }
