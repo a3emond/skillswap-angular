@@ -1,10 +1,8 @@
 import { HttpInterceptorFn }      from "@angular/common/http";
 import { inject }                 from "@angular/core";
-import { MatSnackBar }            from '@angular/material/snack-bar';
 import { Router }                 from "@angular/router";
 import { catchError, NEVER, of, throwError } from 'rxjs';
 import { AuthStore }              from "../auth/auth.store"
-import { InternalErrorException } from "./internal-error.exception";
 
 
 
@@ -17,7 +15,6 @@ import { InternalErrorException } from "./internal-error.exception";
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const store = inject(AuthStore);
   const router= inject(Router);
-  const snackBar: MatSnackBar = inject(MatSnackBar);
 
   //set header
   if(store.isAuthenticated()) {
