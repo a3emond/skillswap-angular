@@ -14,6 +14,9 @@ export class AuthStore {
 
 
   CreateSession(token: string, user: User){
+    console.log("what the helly");
+
+
     localStorage.setItem(this.TOKEN_KEY,token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user))
     this.token.set(token);
