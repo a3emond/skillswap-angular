@@ -1,0 +1,60 @@
+/* Box sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margins */
+* {
+  margin: 0;
+}
+
+/* Base body setup */
+body {
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Media defaults */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Form elements inherit fonts */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Prevent text overflow issues */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/* Remove list styles when used as layout */
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+/* Anchor defaults */
+a {
+  text-decoration: none;
+  color: inherit;
+}
