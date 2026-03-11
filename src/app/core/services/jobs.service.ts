@@ -8,11 +8,18 @@ import { ApiError } from "../http/api-error.model";
 import { JobCreateDto } from "../models/dto/job-create.dto";
 import { AuthStore } from "../auth/auth.store";
 import { JobUpdateDto } from "../models/dto/job-update.dto";
+import { ApiClient } from "../http/api-client";
+
+
+
+
+
+
 
 @Injectable({
     providedIn: 'root'
 }) class JobService {
-    private readonly http: HttpClient = inject(HttpClient);
+    private readonly http: ApiClient = inject(ApiClient);
     private readonly authStore: AuthStore = inject(AuthStore);
 
     search(category: string|null = null, status: string|null = null, min_budget: number|null = null): Observable<Job[]> {
@@ -41,7 +48,7 @@ import { JobUpdateDto } from "../models/dto/job-update.dto";
             console.error('User is not authenticated', error);
             return throwError(() => error);
         }
-        const body: JobCreateDto = { 
+        const body: JobCreateDto = {
             title: title,
             description: description,
             category: category,
@@ -107,7 +114,6 @@ export type MissingRequiredFieldError = ApiError & {
     status: 400,
     message: "Missing required fields"
 };
-
 
 export type JobNotFoundError = ApiError & {
     status: 404,

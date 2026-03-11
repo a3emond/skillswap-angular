@@ -1,15 +1,16 @@
 import { inject, Injectable }           from '@angular/core';
-import { catchError, tap, throwError }  from 'rxjs';
+import { catchError, Observable, tap, throwError }  from 'rxjs';
 import { ApiClient }                    from '../http/api-client';
 import { ApiError }                     from '../http/api-error.model';
 import { AuthStore }                    from '../auth/auth.store';
 import { User }                         from "../models/user.model";
+import { RegisterResponseDto } from '../models/dto/register-response.dto';
 
 
 /**
   * list des containers utilises
   */
-type RegisterDto = {
+export type RegisterDto = {
     name: string;
     username: string;
     email: string;
@@ -17,7 +18,7 @@ type RegisterDto = {
     bio: string;
     skills: string[];
 };
-type LoginDto = {
+export type LoginDto = {
     email: string;
     password: string;
 };
@@ -40,13 +41,16 @@ export class AuthService {
     }
 
 
-    Login(dto: LoginDto) {
-        return this.#http.post('/auth/register', dto)
+    Login(dto: LoginDto): Observable<RegisterResponseDto> {
+        return this.#http.post('/auth/login', dto)
             .pipe(
                 tap({
                   next:(response: any) => {
-                    let r: LoginResponseDto = JSON.parse(response);
-                    this.#store.CreateSession(r.token, r.user)
+                    let token = response.token;
+                    let user  = response.user;
+                    this.#store.CreateSession(token, user);
+
+                    console.log("token has been created")
                   }
                 }),
                 catchError((err: ApiError)=> {
@@ -60,6 +64,10 @@ export class AuthService {
       if(this.#store.isAuthenticated()) {
           this.#store.ClearSession()
       }
+    }
+
+    Authenticated(){
+        return this.#store.isAuthenticated()
     }
 }
 

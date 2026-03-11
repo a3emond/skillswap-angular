@@ -1,22 +1,39 @@
 import { Injectable, inject } from "@angular/core";
 import { AuthStore } from "../auth/auth.store";
-import { ApiClient } from "../http/api-client";
-import { CreateReviewDto } from "../models/dto/create-review.dto";
 import { ApiError } from "../http/api-error.model";
-import { catchError, of, throwError } from "rxjs";
+import { catchError, Observable, of, throwError } from "rxjs";
+import { ApiClient } from "../http/api-client";
 
 
 
+
+/**
+  *list des containers
+  *
+  */
+type CreateReviewDto = {
+    target_id: string;
+    rating   : number;
+    message? : string;
+
+}
+
+/**
+  * le service
+  *
+  *
+  */
 @Injectable({providedIn: 'root'})
 export class Review {
     readonly #store: AuthStore = inject(AuthStore);
     readonly #http : ApiClient = inject(ApiClient);
 
 
-    getReview(id: number) {
-        return this.#http.get(`reviews/user/${id}`)
+    getReview(id: number): Observable<Review> {
+        return this.#http.get<Review>(`reviews/user/${id}`)
           .pipe(
-              catchError((err: any) => {
+              catchError((err: ApiError) => {
+
                   console.error("Error sent: " + err);
                   return throwError(()=> err);
               })
@@ -29,7 +46,7 @@ export class Review {
         };
         return this.#http.post(`/jobs/${job_id}/reviews/`,dto)
             .pipe(
-                catchError((err: any)=> {
+                catchError((err: ApiError)=> {
                     console.error("Error sent: " + err);
                     return throwError(()=> err);
                 })
@@ -38,6 +55,14 @@ export class Review {
 
 }
 
+
+
+
+
+/**
+  * list of errors that this service can send
+  *
+  */
 export type JobNotFound = ApiError & {
     status : 404,
     message: "Job not found"
