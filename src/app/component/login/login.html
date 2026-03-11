@@ -1,0 +1,35 @@
+<html>
+<body class="container">
+  <form class="login-card" (submit)="$event.preventDefault(); Login()">
+    <h1>Login into your Account</h1>
+
+    <div class="form-group">
+      <label>Email Address</label>
+      <input
+        type="email"
+        placeholder="john@example.com"
+        (input)="sanitizeEmail(emailInput.value)"
+        #emailInput>
+      @if (errEmail()) { <small class="error">{{ errEmail() }}</small> }
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <input
+        type="password"
+        placeholder="********"
+        (input)="sanitizePassword(passInput.value)"
+        #passInput>
+      @if (errPassword()) { <small class="error">{{ errPassword() }}</small> }
+    </div>
+
+    @if (errApi()) {
+      <div class="api-error">{{ errApi() }}</div>
+    }
+
+    <button type="submit" [disabled]="!guard()">
+      Register
+    </button>
+  </form>
+</body>
+</html>

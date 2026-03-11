@@ -1,0 +1,19 @@
+<router-outlet />
+<nav class="top-nav">
+    <span class="logo">SKILLSWAP</span>
+    <div class="user-info">
+      @if(authservice.Authenticated()){
+          <button class="btn-me"     (click)="self()"  >about me</button>
+          <button class="btn-logout" (click)="logout()">logout</button>
+      }
+      @else {
+          <button class="btn-logout"  (click)="login()">login</button>
+      }
+    </div>
+</nav>
+<main>
+    <!-- un container list de jobs jobs -->
+    <div>
+    </div>
+</main>
+

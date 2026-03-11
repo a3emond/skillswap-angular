@@ -1,0 +1,93 @@
+
+
+.dashboard-wrapper {
+  padding: 2rem;
+  background-color: #f0f0f0;
+  width: 100vw !important;
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 1rem 2rem;
+  border: 3px solid black;
+  box-shadow: 6px 6px 0px 0px black;
+  margin-bottom: 3rem;
+}
+
+.logo {
+  font-weight: 900;
+  font-size: 2.5rem;
+  letter-spacing: -1px;
+  font-family: sans-serif;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-gap: 2rem;
+}
+
+.card {
+  background: white;
+  border: 3px solid black;
+  padding: 1.5rem;
+  box-shadow: 10px 10px 0px 0px black;
+}
+
+.main-card {
+  grid-column: 1 / 2;
+  background-color: #fff;
+}
+
+.action-card {
+  background-color: #beff28; /* "Electric Lime" neon color */
+}
+
+.status-card {
+  background-color: #ff90e8; /* Neon Pink */
+}
+
+h2 {
+  margin-top: 0;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+}
+
+/* Neubrutalist Buttons */
+button {
+  padding: 0.8rem 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid black;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px 0px black;
+  transition: all 0.1s ease;
+}
+
+button:active {
+  box-shadow: 0px 0px 0px 0px black;
+  transform: translate(4px, 4px);
+}
+
+.btn-logout {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.btn-me {
+  background-color: #93c5fd;
+  color: white;
+}
+.btn-offer {
+  background-color: #a3e635;
+  color: white;
+}
+.btn-primary {
+  background-color: white;
+  width: 100%;
+}
