@@ -1,13 +1,26 @@
-import { inject, Injectable } from '@angular/core';
-import { catchError, of, tap, throwError } from 'rxjs';
-import { ApiClient } from '../http/api-client';
-import { RegisterDto } from '../models/dto/register.dto';
-import { ApiError } from '../http/api-error.model';
-import { LoginDto } from '../models/dto/login.dto';
-import { AuthStore } from '../auth/auth.store';
-import { LoginResponseDto } from '../models/dto/login-response.dto';
+import { inject, Injectable }           from '@angular/core';
+import { catchError, tap, throwError }  from 'rxjs';
+import { ApiClient }                    from '../http/api-client';
+import { ApiError }                     from '../http/api-error.model';
+import { AuthStore }                    from '../auth/auth.store';
+import { User }                         from "../models/user.model";
 
 
+/**
+  * list des containers utilises
+  */
+type RegisterDto = {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    bio: string;
+    skills: string[];
+};
+type LoginDto = {
+    email: string;
+    password: string;
+};
 
 
 
@@ -41,13 +54,26 @@ export class AuthService {
                     return throwError(()=> err);
                 })
             );
-    }
+    };
+
     Logout() {
       if(this.#store.isAuthenticated()) {
           this.#store.ClearSession()
       }
     }
 }
+
+
+/** list des reponses
+  *
+  *
+  */
+export type LoginResponseDto = {
+    token: string;
+    user: User;
+};
+
+
 
 /*
   Erreurs possibles :
